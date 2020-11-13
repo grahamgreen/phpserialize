@@ -17,7 +17,7 @@ go get -u github.com/elliotchance/phpserialize
 package main
 
 import (
-	"github.com/elliotchance/phpserialize"
+	"github.com/grahamgreen/phpserialize"
 	"fmt"
 )
 
