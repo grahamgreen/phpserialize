@@ -6,7 +6,7 @@ PHP [serialize()](http://php.net/manual/en/function.serialize.php) and
 # Install / Update
 
 ```bash
-go get -u github.com/elliotchance/phpserialize
+go get -u github.com/grahamgreen/phpserialize
 ```
 
 `phpserialize` requires Go 1.8+.
