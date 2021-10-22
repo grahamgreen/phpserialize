@@ -17,12 +17,20 @@ type structTag struct {
 	Foo     Struct2 `php:"bar"`
 	Bar     int     `php:"foo"`
 	hidden  bool
-	Balu    string `php:"baz"`
-	Ignored string `php:"-"`
+	Balu    string   `php:"baz"`
+	Ignored string   `php:"-"`
+	Nilptr  *Struct2 `php:",omitnilptr"`
 }
 
 type Struct2 struct {
 	Qux float64
+}
+
+type Struct3 struct {
+	ObjectArray []Struct2
+	IntArray    []int64
+	FloatArray  []float64
+	StringArray []string
 }
 
 type marshalTest struct {
@@ -133,10 +141,17 @@ var marshalTests = map[string]marshalTest{
 		nil,
 	},
 
+	// encode object with array of objects
+	"struct3{ObjectArray Struct2{Qux float64}, IntArray {1, 2}, FloatArray {1.0, 2.0}, StringArray {'a', 'b'}}": {
+		Struct3{[]Struct2{{1.1}, {2.2}}, []int64{1, 2}, []float64{1.0, 2.0}, []string{"a", "b"}},
+		[]byte("O:7:\"Struct3\":4:{s:11:\"objectArray\";a:2:{i:0;O:7:\"Struct2\":1:{s:3:\"qux\";d:1.1;}i:1;O:7:\"Struct2\":1:{s:3:\"qux\";d:2.2;}}s:8:\"intArray\";a:2:{i:0;i:1;i:1;i:2;}s:10:\"floatArray\";a:2:{i:0;d:1;i:1;d:2;}s:11:\"stringArray\";a:2:{i:0;s:1:\"a\";i:1;s:1:\"b\";}}"),
+		nil,
+	},
+
 	// encode object (struct with tags)
-	"structTag{Bar int, Foo Struct2{Qux float64}, hidden bool, Balu string}": {
-		structTag{Struct2{1.23}, 10, true, "yay", ""},
-		[]byte("O:9:\"structTag\":4:{s:3:\"bar\";O:7:\"Struct2\":1:{s:3:\"qux\";d:1.23;}s:3:\"foo\";i:10;s:3:\"baz\";s:3:\"yay\";}"),
+	"structTag{Bar int, Foo Struct2{Qux float64}, hidden bool, Balu string, Nilptr <nil>}": {
+		structTag{Struct2{1.23}, 10, true, "yay", "", nil},
+		[]byte("O:9:\"structTag\":3:{s:3:\"bar\";O:7:\"Struct2\":1:{s:3:\"qux\";d:1.23;}s:3:\"foo\";i:10;s:3:\"baz\";s:3:\"yay\";}"),
 		nil,
 	},
 
@@ -166,8 +181,8 @@ func TestMarshal(t *testing.T) {
 			}
 
 			if !reflect.DeepEqual(result, test.output) {
-				t.Errorf("Expected '%v', got '%v'", string(result),
-					string(test.output))
+				t.Errorf("Expected '%v', got '%v'", string(test.output),
+					string(result))
 			}
 		})
 	}
